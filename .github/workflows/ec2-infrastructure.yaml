@@ -198,12 +198,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4      
 
-      - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-plan
-          path: terraform-ec2/tfplan
-
       - name: Create release artifact
         working-directory: terraform-ec2
         run: |
@@ -252,7 +246,9 @@ jobs:
         uses: mshick/add-pr-comment@v2
         with:
           message: |
-            🚀 A new release **${{ steps.calc_tag.outputs.new_tag }}** was created.
+            A new release **${{ steps.calc_tag.outputs.new_tag }}** was created.
             See the release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.calc_tag.outputs.new_tag }}
           repo-token: ${{ secrets.SECRET_KEY }}
           allow-repeats: false
+
+    
