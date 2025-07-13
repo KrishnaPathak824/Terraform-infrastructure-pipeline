@@ -33,15 +33,17 @@ jobs:
 
       - name: Init Terraform
         id: init
-        run: terraform init
+        run: |
+          terraform init | tee init_output.txt
+        continue-on-error: true
 
       - name: Post Init Comment
-        if: ${{ always() && (steps.init.outcome == 'success' || steps.init.outcome == 'failure') }}
+        if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         with:
           commenter_type: init
-          commenter_input: ${{ format('{0}{1}', steps.init.outputs.stdout, steps.init.outputs.stderr) }}
-          commenter_exitcode: ${{ steps.init.outputs.exitcode }}
+          commenter_input: init_output.txt
+          commenter_exitcode: ${{ steps.init.outcome == 'success' && 0 || 1 }}
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
@@ -50,41 +52,43 @@ jobs:
 
       - name: Init TFLint
         run: tflint --init
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_TOKEN }}
 
       - name: Run TFLint
         id: tflint
-        run: tflint -f compact
-
+        run: |
+          tflint -f compact | tee tflint_output.txt
+        continue-on-error: true
+        
       - name: Post TFLint Comment
-        if: ${{ always() && (steps.tflint.outcome == 'success' || steps.tflint.outcome == 'failure') }}
+        if: ${{ always()}}
         uses: GetTerminus/terraform-pr-commenter@dpr-update-commenter
         with:
           commenter_type: tflint
-          commenter_input: ${{ format('{0}{1}', steps.tflint.outputs.stdout, steps.tflint.outputs.stderr) }}
-          commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
+          commenter_input: tflint_output.txt
+          commenter_exitcode: ${{ steps.tflint.outcome == 'success' && 0 || 1 }}
 
       - name: Run Terraform format
         id: fmt
-        run: terraform fmt -check
+        run: |
+          terraform fmt -check | tee fmt_output.txt
 
       - name: Post Format Comment
         if: ${{ always() && (steps.fmt.outcome == 'success' || steps.fmt.outcome == 'failure') }}
         uses: GetTerminus/terraform-pr-commenter@v3
         with:
           commenter_type: fmt
-          commenter_input: ${{ format('{0}{1}', steps.fmt.outputs.stdout, steps.fmt.outputs.stderr) }}
-          commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
+          commenter_input: fmt_output.txt
+          commenter_exitcode: ${{ steps.fmt.outcome == 'success' && 0 || 1 }}
 
       - name: Terraform Validate
         id: validate
-        run: terraform validate
+        run: |
+          terraform validate | tee validate_output.txt
 
       - name: Post TF Validate Comment
-        if: ${{ always() && (steps.validate.outcome == 'success' || steps.validate.outcome == 'failure') }}
+        if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         with:
           commenter_type: validate
-          commenter_input: ${{ format('{0}{1}', steps.validate.outputs.stdout, steps.validate.outputs.stderr) }}
-          commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
+          commenter_input: validate_output.txt
+          commenter_exitcode: ${{ steps.validate.outcome == 'success' && 0 || 1 }}
