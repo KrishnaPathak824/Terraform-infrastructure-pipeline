@@ -2,6 +2,8 @@ name: Infrastructure CI/CD
 on:
   pull_request:
     types: [opened, synchronize, closed]
+    paths:
+      - 'terraform-ec2/**'
     branches:
       - main
 

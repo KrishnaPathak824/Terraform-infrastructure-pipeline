@@ -1,0 +1,138 @@
+name: Infrastructure CI/CD
+on:
+  pull_request:
+    types: [opened, synchronize, closed]
+    paths:
+      - 'terraform-s3bucket/**'
+    branches:
+      - main
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Run AWS commands
+        run: |
+          aws s3 ls
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.12.0
+
+      - name: Init Terraform
+        id: init
+        run: |
+          terraform init | tee init_output.txt
+          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Show init_output.txt content
+        if: always()
+        run: cat init_output.txt || echo "init_output.txt not found"
+
+      - name: Post Init Comment
+        if: ${{ always() }}
+        uses: GetTerminus/terraform-pr-commenter@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          commenter_type: init
+          commenter_input: init_output.txt
+          commenter_exitcode: ${{ steps.init.outputs.exitcode }}
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.52.0
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        id: tflint
+        run: |
+          tflint -f compact | tee tflint_output.txt
+          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+      
+      - name: Post TFLint Comment
+        if: ${{ always()}}
+        uses: GetTerminus/terraform-pr-commenter@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          commenter_type: tflint
+          commenter_input: tflint_output.txt
+          commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
+
+      - name: Run Terraform format
+        id: fmt
+        run: |
+          terraform fmt -check | tee fmt_output.txt
+          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+
+
+
+      - name: Post Format Comment
+        if: ${{ always() }}
+        uses: GetTerminus/terraform-pr-commenter@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          commenter_type: fmt
+          commenter_input: fmt_output.txt
+          commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          terraform validate | tee validate_output.txt
+          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Post TF Validate Comment
+        if: ${{ always() }}
+        uses: GetTerminus/terraform-pr-commenter@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          commenter_type: validate
+          commenter_input: validate_output.txt
+          commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
+
+  Security-check:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.12.0
+
+      - name: Init Terraform
+        id: init
+        run: | 
+          terraform init 
+          
