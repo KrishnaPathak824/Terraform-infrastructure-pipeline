@@ -175,20 +175,7 @@ jobs:
       - name: Init Terraform
         working-directory: terraform-ec2
         id: init
-        run: | 
-          terraform init | tee terraform-ec2/init_output.txt
-          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
-
-      - name: Post Init Comment
-        if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
-        with:
-          commenter_type: init
-          commenter_input: terraform-ec2/init_output.txt
-          commenter_exitcode: ${{ steps.init.outputs.exitcode }}
-          commenter_debug: true
+        run: terraform init
 
       - name: Terraform Plan
         working-directory: terraform-ec2
