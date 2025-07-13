@@ -155,8 +155,7 @@ jobs:
           
   terraform-plan:
     runs-on: ubuntu-latest
-    needs: |
-      security-check
+    needs: security-check
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
