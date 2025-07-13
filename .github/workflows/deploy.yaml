@@ -35,9 +35,7 @@ jobs:
           terraform_version: 1.12.0 
 
       - name: Terraform Init
-        working-directory: terraform-ec2
         run: terraform init
 
       - name: Terraform Apply
-        working-directory: terraform-ec2
         run: terraform apply "tfplan" -auto-approve
