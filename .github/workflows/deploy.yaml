@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-    workflows:
-      - ec2-infrastructure.yaml
 
 jobs:
   deploy:
@@ -24,8 +22,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           name: terraform-plan
-          workflow: ec2-infrastructure.yml 
-          path: release-artifacts/release.zip
+          path: terraform-ec2/tfplan
 
       - name: Download latest release zip
         uses: dsaltares/fetch-gh-release-asset@master
