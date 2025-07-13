@@ -39,12 +39,8 @@ jobs:
           terraform init | tee init_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
 
-      - name: Show init_output.txt content
-        working-directory: terraform-ec2
-        if: always()
-        run: cat init_output.txt || echo "init_output.txt not found"
-
       - name: Post Init Comment
+        working-directory: terraform-ec2
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
@@ -55,20 +51,24 @@ jobs:
           commenter_exitcode: ${{ steps.init.outputs.exitcode }}
 
       - name: Setup TFLint
+        working-directory: terraform-ec2
         uses: terraform-linters/setup-tflint@v4
         with:
           tflint_version: v0.52.0
 
       - name: Init TFLint
+        working-directory: terraform-ec2
         run: tflint --init
 
       - name: Run TFLint
+        working-directory: terraform-ec2
         id: tflint
         run: |
           tflint -f compact | tee tflint_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
       
       - name: Post TFLint Comment
+        working-directory: terraform-ec2
         if: ${{ always()}}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
@@ -79,6 +79,7 @@ jobs:
           commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
 
       - name: Run Terraform format
+        working-directory: terraform-ec2
         id: fmt
         run: |
           terraform fmt -check | tee fmt_output.txt
@@ -87,6 +88,7 @@ jobs:
 
 
       - name: Post Format Comment
+        working-directory: terraform-ec2
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
@@ -97,6 +99,7 @@ jobs:
           commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
 
       - name: Terraform Validate
+        working-directory: terraform-ec2
         id: validate
         run: |
           terraform validate | tee validate_output.txt
@@ -104,6 +107,7 @@ jobs:
         continue-on-error: true
 
       - name: Post TF Validate Comment
+        working-directory: terraform-ec2
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
@@ -120,9 +124,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: cd terraform-ec2
-        run: cd terraform-ec2
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -136,6 +137,7 @@ jobs:
           terraform_version: 1.12.0
 
       - name: Init Terraform
+        working-directory: terraform-ec2
         id: init
         run: | 
           terraform init 
