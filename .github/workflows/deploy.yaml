@@ -1,0 +1,57 @@
+name: deploy-ec2-infrastructure
+on:
+  push:
+    branches:
+      - main
+    workflows:
+      - ec2-infrastructure.yaml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download terraform plan artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: terraform-plan
+          workflow: ec2-infrastructure.yml 
+          path: ./terraform-ec2
+
+      - name: Download latest release zip
+        uses: dsaltares/fetch-gh-release-asset@v1
+        with:
+          repo: ${{ github.repository }}
+          file: release.zip
+          target: release.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract release.zip
+        run: unzip release.zip -d terraform-ec2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.12.0 
+
+
+      - name: Terraform Init
+        working-directory: terraform-ec2
+        run: terraform init
+
+      - name: Terraform Plan (optional)
+        working-directory: terraform-ec2
+        run: terraform plan
+
+      - name: Terraform Apply
+        working-directory: terraform-ec2
+        run: terraform apply "tfplan" -auto-approve
