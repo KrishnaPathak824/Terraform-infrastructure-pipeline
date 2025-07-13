@@ -20,12 +20,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Download terraform plan artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          name: terraform-plan
-          path: terraform-ec2/tfplan
-
       - name: Download latest release zip
         uses: dsaltares/fetch-gh-release-asset@master
         with:
