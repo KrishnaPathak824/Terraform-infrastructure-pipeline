@@ -51,7 +51,6 @@ jobs:
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
-        working-directory: terraform-ec2
         with:
           tflint_version: v0.52.0
 
