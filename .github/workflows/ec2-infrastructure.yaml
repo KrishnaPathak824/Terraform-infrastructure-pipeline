@@ -42,9 +42,8 @@ jobs:
       - name: Post Init Comment
         uses: GetTerminus/terraform-pr-commenter@v3
         if: ${{ always() }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY}}
         with:
+          github_token: ${{ secrets.SECRET_KEY }}
           commenter_type: init
           commenter_input: terraform-ec2/init_output.txt
           commenter_exitcode: ${{ steps.init.outputs.exitcode }}
@@ -68,9 +67,8 @@ jobs:
       - name: Post TFLint Comment
         if: ${{ always()}}
         uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
         with:
+          github_token: ${{ secrets.SECRET_KEY }}
           commenter_type: tflint
           commenter_input: terraform-ec2/tflint_output.txt
           commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
@@ -85,9 +83,8 @@ jobs:
       - name: Post Format Comment
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
         with:
+          github_token: ${{ secrets.SECRET_KEY }}
           commenter_type: fmt
           commenter_input: terraform-ec2/fmt_output.txt
           commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
@@ -103,9 +100,8 @@ jobs:
       - name: Post TF Validate Comment
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
         with:
+          github_token: ${{ secrets.SECRET_KEY }}
           commenter_type: validate
           commenter_input: terraform-ec2/validate_output.txt
           commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
