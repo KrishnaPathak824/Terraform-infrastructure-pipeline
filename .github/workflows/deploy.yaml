@@ -38,6 +38,10 @@ jobs:
         working-directory: terraform-ec2
         run: terraform init
 
+      - name: Terraform Plan
+        working-directory: terraform-ec2
+        run: terraform plan -out=tfplan
+
       - name: Terraform Apply
         working-directory: terraform-ec2
         run: terraform apply 
