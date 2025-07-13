@@ -36,7 +36,6 @@ jobs:
         run: |
           terraform init | tee init_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
-        continue-on-error: true
 
       - name: Post Init Comment
         if: ${{ always() }}
@@ -61,11 +60,10 @@ jobs:
         run: |
           tflint -f compact | tee tflint_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
-        continue-on-error: true
-        
+      
       - name: Post TFLint Comment
         if: ${{ always()}}
-        uses: GetTerminus/terraform-pr-commenter@dpr-update-commenter
+        uses: GetTerminus/terraform-pr-commenter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -78,7 +76,6 @@ jobs:
         run: |
           terraform fmt -check | tee fmt_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
-        continue-on-error: true
 
       - name: Post Format Comment
         if: ${{ always() }}
