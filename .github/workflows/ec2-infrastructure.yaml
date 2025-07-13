@@ -51,8 +51,8 @@ jobs:
           commenter_exitcode: ${{ steps.init.outputs.exitcode }}
 
       - name: Setup TFLint
-        working-directory: terraform-ec2
         uses: terraform-linters/setup-tflint@v4
+        working-directory: terraform-ec2
         with:
           tflint_version: v0.52.0
 
@@ -68,9 +68,9 @@ jobs:
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
       
       - name: Post TFLint Comment
-        working-directory: terraform-ec2
         if: ${{ always()}}
         uses: GetTerminus/terraform-pr-commenter@v3
+        working-directory: terraform-ec2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -88,9 +88,10 @@ jobs:
 
 
       - name: Post Format Comment
-        working-directory: terraform-ec2
+        
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
+        working-directory: terraform-ec2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -99,17 +100,17 @@ jobs:
           commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
 
       - name: Terraform Validate
-        working-directory: terraform-ec2
         id: validate
+        working-directory: terraform-ec2
         run: |
           terraform validate | tee validate_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
         continue-on-error: true
 
       - name: Post TF Validate Comment
-        working-directory: terraform-ec2
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
+        working-directory: terraform-ec2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
