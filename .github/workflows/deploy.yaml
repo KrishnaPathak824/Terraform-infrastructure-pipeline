@@ -25,7 +25,7 @@ jobs:
         with:
           name: terraform-plan
           workflow: ec2-infrastructure.yml 
-          path: ./terraform-ec2
+          path: release-artifacts/release.zip
 
       - name: Download latest release zip
         uses: dsaltares/fetch-gh-release-asset@master
