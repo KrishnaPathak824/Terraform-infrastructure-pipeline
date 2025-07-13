@@ -27,7 +27,7 @@ jobs:
           token: ${{ secrets.SECRET_KEY }}
 
       - name: Extract release.zip
-        run: unzip release.zip -d terraform-ec2
+        run: unzip -o release.zip -d terraform-ec2  
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
