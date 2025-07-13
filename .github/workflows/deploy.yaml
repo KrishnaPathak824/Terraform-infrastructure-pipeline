@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-    workflows:
-      - ec2-infrastructure.yaml
 
 jobs:
   deploy:
