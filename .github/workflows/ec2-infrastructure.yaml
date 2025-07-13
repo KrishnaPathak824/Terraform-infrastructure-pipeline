@@ -41,7 +41,6 @@ jobs:
 
       - name: Post Init Comment
         uses: GetTerminus/terraform-pr-commenter@v3
-        working-directory: terraform-ec2
         if: ${{ always() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,7 +69,6 @@ jobs:
       - name: Post TFLint Comment
         if: ${{ always()}}
         uses: GetTerminus/terraform-pr-commenter@v3
-        working-directory: terraform-ec2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -88,10 +86,8 @@ jobs:
 
 
       - name: Post Format Comment
-        
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
-        working-directory: terraform-ec2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -110,7 +106,6 @@ jobs:
       - name: Post TF Validate Comment
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
-        working-directory: terraform-ec2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
