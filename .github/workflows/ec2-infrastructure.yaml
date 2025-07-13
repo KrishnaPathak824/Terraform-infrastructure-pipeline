@@ -2,8 +2,6 @@ name: Infrastructure CI/CD
 on:
   pull_request:
     types: [opened, synchronize, closed]
-    paths:
-      - 'terraform-ec2/**'
     branches:
       - main
 
@@ -17,10 +15,7 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: cd terraform-ec2
-        run: cd terraform-ec2
-
+        
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
