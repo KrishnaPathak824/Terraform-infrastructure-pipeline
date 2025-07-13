@@ -240,7 +240,7 @@ jobs:
           automatic_release_tag: ${{ steps.calc_tag.outputs.new_tag }}
           prerelease: false
           title: Release ${{ steps.calc_tag.outputs.new_tag }}
-          files: release-artifacts/release.zip
+          files: terraform-ec2/release-artifacts/release.zip
 
       - name: Add PR Comment
         uses: mshick/add-pr-comment@v2
