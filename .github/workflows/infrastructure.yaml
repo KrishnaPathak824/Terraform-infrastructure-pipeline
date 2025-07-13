@@ -36,6 +36,7 @@ jobs:
         if: ${{ always() && (steps.init.outcome == 'success' || steps.init.outcome == 'failure') }}
         uses: GetTerminus/terraform-pr-commenter@v3
         with:
+          github-token: ${{ secrets.SECRET_TOKEN }}
           commenter_type: init
           commenter_input: ${{ format('{0}{1}', steps.init.outputs.stdout, steps.init.outputs.stderr) }}
           commenter_exitcode: ${{ steps.init.outputs.exitcode }}
@@ -58,6 +59,7 @@ jobs:
         if: ${{ always() && (steps.tflint.outcome == 'success' || steps.tflint.outcome == 'failure') }}
         uses: GetTerminus/terraform-pr-commenter@dpr-update-commenter
         with:
+          github-token: ${{ secrets.SECRET_TOKEN }}
           commenter_type: tflint
           commenter_input: ${{ format('{0}{1}', steps.tflint.outputs.stdout, steps.tflint.outputs.stderr) }}
           commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
@@ -70,6 +72,7 @@ jobs:
         if: ${{ always() && (steps.fmt.outcome == 'success' || steps.fmt.outcome == 'failure') }}
         uses: GetTerminus/terraform-pr-commenter@v3
         with:
+          github-token: ${{ secrets.SECRET_TOKEN }}
           commenter_type: fmt
           commenter_input: ${{ format('{0}{1}', steps.fmt.outputs.stdout, steps.fmt.outputs.stderr) }}
           commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
@@ -82,6 +85,7 @@ jobs:
         if: ${{ always() && (steps.validate.outcome == 'success' || steps.validate.outcome == 'failure') }}
         uses: GetTerminus/terraform-pr-commenter@v3
         with:
+          github-token: ${{ secrets.SECRET_TOKEN }}
           commenter_type: validate
           commenter_input: ${{ format('{0}{1}', steps.validate.outputs.stdout, steps.validate.outputs.stderr) }}
           commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
