@@ -40,6 +40,8 @@ jobs:
       - name: Post Init Comment
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           commenter_type: init
           commenter_input: init_output.txt
@@ -62,6 +64,8 @@ jobs:
       - name: Post TFLint Comment
         if: ${{ always()}}
         uses: GetTerminus/terraform-pr-commenter@dpr-update-commenter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           commenter_type: tflint
           commenter_input: tflint_output.txt
@@ -75,6 +79,8 @@ jobs:
       - name: Post Format Comment
         if: ${{ always() && (steps.fmt.outcome == 'success' || steps.fmt.outcome == 'failure') }}
         uses: GetTerminus/terraform-pr-commenter@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           commenter_type: fmt
           commenter_input: fmt_output.txt
@@ -88,6 +94,8 @@ jobs:
       - name: Post TF Validate Comment
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           commenter_type: validate
           commenter_input: validate_output.txt
