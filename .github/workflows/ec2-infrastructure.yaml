@@ -40,9 +40,9 @@ jobs:
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
 
       - name: Post Init Comment
+        uses: GetTerminus/terraform-pr-commenter@v3
         working-directory: terraform-ec2
         if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
