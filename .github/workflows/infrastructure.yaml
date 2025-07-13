@@ -37,6 +37,10 @@ jobs:
           terraform init | tee init_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
 
+      - name: Show init_output.txt content
+        if: always()
+        run: cat init_output.txt || echo "init_output.txt not found"
+
       - name: Post Init Comment
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
@@ -76,6 +80,8 @@ jobs:
         run: |
           terraform fmt -check | tee fmt_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+
+
 
       - name: Post Format Comment
         if: ${{ always() }}
