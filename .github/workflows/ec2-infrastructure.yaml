@@ -45,13 +45,13 @@ jobs:
 
       - name: Post Init Comment
         uses: GetTerminus/terraform-pr-commenter@v3
+        if: always()
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           commenter_type: init
           commenter_input: terraform-ec2/init_output.txt
           commenter_exitcode: ${{ steps.init.outputs.exitcode }}
-          commenter_behavior: always
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
