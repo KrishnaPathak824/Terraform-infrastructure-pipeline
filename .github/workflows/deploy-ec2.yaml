@@ -25,6 +25,7 @@ jobs:
           tag=$(curl -s -H "Authorization: token ${{ secrets.SECRET_KEY }}" \
             https://api.github.com/repos/${{ github.repository }}/tags \
             | jq -r '.[].name' | grep '\-ec2$' | head -n 1)
+          echo "Resolved EC2 Tag: $tag"
           echo "latest_tag=$tag" >> $GITHUB_OUTPUT
 
       - name: Download release-ec2.zip
