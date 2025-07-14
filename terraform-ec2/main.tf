@@ -31,7 +31,7 @@ resource "aws_iam_role" "ec2" {
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2_instance_profile"
+  name = "krishna_ec2_instance_profile"
   role = aws_iam_role.ec2.name
 }
 
