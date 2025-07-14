@@ -45,7 +45,6 @@ jobs:
 
       - name: Post Init Comment
         uses: GetTerminus/terraform-pr-commenter@v3
-        if: ${{ always() }}
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY}}
         with:
@@ -71,7 +70,6 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Post TFLint Comment
-        if: ${{ always()}}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
@@ -88,7 +86,6 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Post Format Comment
-        if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
@@ -106,7 +103,6 @@ jobs:
         continue-on-error: true
 
       - name: Post TF Validate Comment
-        if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
