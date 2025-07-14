@@ -65,7 +65,7 @@ jobs:
           github-token: ${{ secrets.SECRET_KEY }}
           script: |
             const fs = require('fs');
-            const lint = fs.readFileSync('terraform-ec2/tflint.txt', 'utf8');
+            const lint = fs.readFileSync('terraform-ec2/tflint_output.txt', 'utf8');
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -104,19 +104,19 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
-      - name: Comment Terraform TF Format
+      - name: Comment Terraform TF Validate
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.SECRET_KEY }}
           script: |
             const fs = require('fs');
-            const fmt = fs.readFileSync('terraform-ec2/fmt_output.txt', 'utf8');
+            const validate = fs.readFileSync('terraform-ec2/validate_output.txt', 'utf8');
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Terraform TF Format Output for \`ec2-instance\`
-              \n\n\`\`\`hcl\n${fmt}\n\`\`\``
+              body: `## Terraform TF Validate Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${validate}\n\`\`\``
               });
 
   security-check:
