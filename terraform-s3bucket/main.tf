@@ -1,13 +1,14 @@
 data "terraform_remote_state" "ec2" {
-  backend = "local"
+  backend = "s3"
   config = {
-    path = "../terraform-ec2/terraform.tfstate"
+    bucket = "krishna-tf-s3bucket"
+    key    = "ec2/terraform.tfstate"
+    region = "us-east-1"
   }
 }
 
 resource "aws_s3_bucket" "krishna-tf-s3bucket" {
   bucket = "krishna-tf-s3bucket"
-
   tags = {
     Name    = "S3Bucket"
     Creator = "Krishna Pathak"
