@@ -209,9 +209,9 @@ jobs:
       - name: Create release artifact
         working-directory: terraform-ec2
         run: |
-          zip -r release.zip . -x '*.git*' 
+          zip -r release-ec2.zip . -x '*.git*' 
           mkdir -p release-artifacts
-          mv release.zip release-artifacts/
+          mv release-ec2.zip release-artifacts/
 
       - name: Get latest tag
         id: get_tag
@@ -248,7 +248,7 @@ jobs:
           automatic_release_tag: ${{ steps.calc_tag.outputs.new_tag }}
           prerelease: false
           title: Release ${{ steps.calc_tag.outputs.new_tag }}
-          files: terraform-ec2/release-artifacts/release.zip
+          files: terraform-ec2/release-artifacts/release-ec2.zip
 
       - name: Add PR Comment
         uses: mshick/add-pr-comment@v2
