@@ -176,15 +176,15 @@ jobs:
         working-directory: terraform-ec2
         id: plan
         run: |
-          terraform plan -out=tfplan | tee plan_output.txt
+          terraform plan  | tee tfplan.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Debug - Show plan output
-        run: cat terraform-ec2/plan_output.txt || echo "plan_output.txt not found"
+        run: cat terraform-ec2/tfplan.txt || echo "tfplan.txt not found"
 
       - name: Copy file for commenter
         run: |
-          cp terraform-ec2/plan_output.txt ./plan_output.txt
+          cp terraform-ec2/tfplan.txt ./tfplan.txt
           echo "File copied successfully"
 
       - name: Post Plan Comment
@@ -194,7 +194,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
         with:
           commenter_type: plan
-          commenter_input: plan_output.txt
+          commenter_input: tfplan.txt
           commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
           commenter_debug: true
 
