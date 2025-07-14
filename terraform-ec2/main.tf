@@ -14,7 +14,7 @@ data "aws_ami" "amazon_linux" {
 }
 
 resource "aws_iam_role" "ec2" {
-  name = "ec2-iam-krishna"
+  name = "ec2-iam-krishna-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -31,7 +31,7 @@ resource "aws_iam_role" "ec2" {
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "krishna_ec2_instance_profile-iam"
+  name = "krishna_ec2_instance_profile-roles"
   role = aws_iam_role.ec2.name
 }
 
