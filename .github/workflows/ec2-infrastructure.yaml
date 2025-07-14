@@ -43,6 +43,12 @@ jobs:
       - name: Debug - Show init output
         run: cat terraform-ec2/init_output.txt || echo "init_output.txt not found"
 
+      - name: Copy file for commenter
+        run: |
+          cp terraform-ec2/init_output.txt ./init_output.txt
+          echo "File copied successfully"
+          ls -la init_output.txt
+
       - name: Post Init Comment
         uses: GetTerminus/terraform-pr-commenter@v3
         if: always()
@@ -139,8 +145,6 @@ jobs:
       - name: tfsec
         uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
         with:
-          working-directory: terraform-ec2
-          minimum_severity: HIGH 
           github_token: ${{ github.token }}
 
           
