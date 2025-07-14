@@ -19,6 +19,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Get latest -s3 tag
+        id: get_tag
+        run: |
+          tag=$(curl -s -H "Authorization: token ${{ secrets.SECRET_KEY }}" \
+            https://api.github.com/repos/${{ github.repository }}/tags \
+            | jq -r '.[].name' | grep '\-s3$' | head -n 1)
+          echo "latest_tag=$tag" >> $GITHUB_OUTPUT
+
       - name: Download latest release zip
         uses: dsaltares/fetch-gh-release-asset@master
         with:
@@ -26,8 +34,7 @@ jobs:
           file: release-s3.zip
           target: release-s3.zip
           token: ${{ secrets.SECRET_KEY }}
-          version: "*-s3"
-          regex: true
+          version: ${{ steps.get_tag.outputs.latest_tag }}
 
       - name: Extract release-s3.zip
         run: unzip -o release-s3.zip -d terraform-s3bucket
