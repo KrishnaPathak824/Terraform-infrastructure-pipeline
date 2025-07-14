@@ -147,10 +147,10 @@ jobs:
         run: | 
           terraform init 
 
-      # - name: tfsec
-      #   uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
-      #   with:
-      #     github_token: ${{ github.token }}
+      - name: tfsec
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
+        with:
+          github_token: ${{ github.token }}
 
           
   terraform-plan:
@@ -225,7 +225,6 @@ jobs:
       run: |
         git fetch --tags
 
-        # Get latest ec2 tag (vX.Y.Z-ec2), extract version part
         last_version=$(git tag --sort=-v:refname | grep '\-ec2$' | head -n 1 | sed 's/-ec2//' | sed 's/^v//')
 
         branch="${GITHUB_REF##*/}"
