@@ -40,8 +40,8 @@ jobs:
 
       - name: Terraform Plan
         working-directory: terraform-ec2
-        run: terraform plan -out=tfplan
+        run: terraform plan
 
       - name: Terraform Apply
         working-directory: terraform-ec2
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve

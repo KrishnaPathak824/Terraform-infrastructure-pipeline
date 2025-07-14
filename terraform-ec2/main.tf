@@ -13,7 +13,7 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-resource "aws_iam_role" "ec2-krishna-role" {
+resource "aws_iam_role" "ec2" {
   name = "ec2_role"
 
   assume_role_policy = jsonencode({
@@ -30,15 +30,15 @@ resource "aws_iam_role" "ec2-krishna-role" {
   })
 }
 
-resource "aws_iam_instance_profile" "ec2_krishna_instance_profile" {
+resource "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2_instance_profile"
-  role = aws_iam_role.ec2-krishna-role.name
+  role = aws_iam_role.ec2.name
 }
 
 resource "aws_instance" "krishna-tf-ec2instance" {
   ami                  = data.aws_ami.amazon_linux.id
   instance_type        = "t2.micro"
-  iam_instance_profile = aws_iam_instance_profile.ec2_krishna_instance_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
   tags = {
     Name    = "EC2Instance"
