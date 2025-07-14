@@ -37,15 +37,11 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/releases/tags/$tag \
             | jq -r '.assets[] | select(.name == "release-ec2.zip") | .url')
 
-          if [ -z "$asset_url" ]; then
-            echo "❌ Could not find asset URL."; exit 1
-          fi
-
           curl -L -H "Authorization: token ${{ secrets.SECRET_KEY }}" \
                -H "Accept: application/octet-stream" \
                 "$asset_url" -o release-ec2.zip
 
-          echo "✅ Downloaded release-ec2.zip"
+          echo "Downloaded release-ec2.zip"
 
       - name: Extract release-ec2.zip
         run: unzip -o release-ec2.zip -d terraform-ec2
