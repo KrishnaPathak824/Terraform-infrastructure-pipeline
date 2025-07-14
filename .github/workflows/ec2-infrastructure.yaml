@@ -1,4 +1,4 @@
-name: Infrastructure CI/CD
+name: Infrastructure CI/CD EC2
 on:
   pull_request:
     types: [opened, synchronize, closed]
@@ -8,7 +8,6 @@ on:
 permissions:              
   contents: read
   pull-requests: write
-
 
 jobs:
   lint:
@@ -38,22 +37,11 @@ jobs:
         id: init
         working-directory: terraform-ec2
         run: |
-          terraform init | tee init_output.txt
+          terraform init  | tee init_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Debug - Show init output
         run: cat terraform-ec2/init_output.txt || echo "init_output.txt not found"
-
-      - name: Post Init Comment
-        uses: GetTerminus/terraform-pr-commenter@v3
-        if: ${{ always() }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY}}
-        with:
-          commenter_type: init
-          commenter_input: terraform-ec2/init_output.txt
-          commenter_exitcode: ${{ steps.init.outputs.exitcode }}
-          commenter_debug: true
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
@@ -71,15 +59,20 @@ jobs:
           tflint -f compact | tee tflint_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Post TFLint Comment
-        if: ${{ always()}}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
+      - name: Comment Terraform TFLint
+        uses: actions/github-script@v7
         with:
-          commenter_type: tflint
-          commenter_input: terraform-ec2/tflint_output.txt
-          commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const lint = fs.readFileSync('terraform-ec2/tflint_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TFLint Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${lint}\n\`\`\``
+              });
 
       - name: Run Terraform format
         working-directory: terraform-ec2
@@ -88,15 +81,20 @@ jobs:
           terraform fmt -check | tee fmt_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Post Format Comment
-        if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
+      - name: Comment Terraform TF Format
+        uses: actions/github-script@v7
         with:
-          commenter_type: fmt
-          commenter_input: terraform-ec2/fmt_output.txt
-          commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const fmt = fs.readFileSync('terraform-ec2/fmt_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TF Format Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${fmt}\n\`\`\``
+              });
 
       - name: Terraform Validate
         id: validate
@@ -106,15 +104,20 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
-      - name: Post TF Validate Comment
-        if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
+      - name: Comment Terraform TF Validate
+        uses: actions/github-script@v7
         with:
-          commenter_type: validate
-          commenter_input: terraform-ec2/validate_output.txt
-          commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const validate = fs.readFileSync('terraform-ec2/validate_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TF Validate Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${validate}\n\`\`\``
+              });
 
   security-check:
     runs-on: ubuntu-latest
@@ -144,8 +147,6 @@ jobs:
       - name: tfsec
         uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
         with:
-          working-directory: terraform-ec2
-          minimum_severity: HIGH 
           github_token: ${{ github.token }}
 
           
@@ -177,19 +178,27 @@ jobs:
         working-directory: terraform-ec2
         id: plan
         run: |
-          terraform plan -out=tfplan | tee plan_output.txt
+          terraform plan  | tee tfplan.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Post Plan Comment
-        if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
+      - name: Debug - Show plan output
+        run: cat terraform-ec2/tfplan.txt || echo "tfplan.txt not found"
+
+      - name: Comment Terraform TFPlan
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        uses: actions/github-script@v7
         with:
-          commenter_type: plan
-          commenter_input: terraform-ec2/plan_output.txt
-          commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
-          commenter_debug: true
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const tfplan = fs.readFileSync('terraform-ec2/tfplan.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TFPlan Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${tfplan}\n\`\`\``
+              });
 
   build-artifact:
     runs-on: ubuntu-latest  
