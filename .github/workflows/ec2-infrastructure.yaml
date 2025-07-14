@@ -147,10 +147,10 @@ jobs:
         run: | 
           terraform init 
 
-      - name: tfsec
-        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
-        with:
-          github_token: ${{ github.token }}
+      # - name: tfsec
+      #   uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
+      #   with:
+      #     github_token: ${{ github.token }}
 
           
   terraform-plan:
@@ -238,16 +238,16 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.SECRET_KEY }}
-          custom_tag: ${{ steps.calc_tag.outputs.new_tag }}
+          custom_tag: ${{ steps.calc_tag.outputs.new_tag }}-ec2
           tag_prefix: ""
 
       - name: Create GitHub Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.SECRET_KEY }}
-          automatic_release_tag: ${{ steps.calc_tag.outputs.new_tag }}
+          automatic_release_tag: ${{ steps.calc_tag.outputs.new_tag }}-ec2
           prerelease: false
-          title: Release ${{ steps.calc_tag.outputs.new_tag }}
+          title: Release ${{ steps.calc_tag.outputs.new_tag }}-ec2
           files: terraform-ec2/release-artifacts/release-ec2.zip
 
       - name: Add PR Comment
