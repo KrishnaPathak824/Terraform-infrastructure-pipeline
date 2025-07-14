@@ -30,12 +30,22 @@ jobs:
           echo "latest_tag=$tag" >> $GITHUB_OUTPUT
 
       - name: Download release-ec2.zip
-        uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          repo: ${{ github.repository }}
-          file: release-ec2.zip
-          target: release-ec2.zip
-          token: ${{ secrets.SECRET_KEY }}
+        run: |
+          tag=${{ steps.get_tag.outputs.latest_tag }}
+
+          asset_url=$(curl -s -H "Authorization: token ${{ secrets.SECRET_KEY }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/$tag \
+            | jq -r '.assets[] | select(.name == "release-ec2.zip") | .url')
+
+          if [ -z "$asset_url" ]; then
+            echo "❌ Could not find asset URL."; exit 1
+          fi
+
+          curl -L -H "Authorization: token ${{ secrets.SECRET_KEY }}" \
+               -H "Accept: application/octet-stream" \
+                "$asset_url" -o release-ec2.zip
+
+          echo "✅ Downloaded release-ec2.zip"
 
       - name: Extract release-ec2.zip
         run: unzip -o release-ec2.zip -d terraform-ec2
