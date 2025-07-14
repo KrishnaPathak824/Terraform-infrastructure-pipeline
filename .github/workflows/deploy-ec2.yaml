@@ -22,12 +22,12 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: ${{ github.repository }}
-          file: release.zip
-          target: release.zip
+          file: release-ec2.zip
+          target: release-ec2.zip
           token: ${{ secrets.SECRET_KEY }}
 
-      - name: Extract release.zip
-        run: unzip -o release.zip -d terraform-ec2  
+      - name: Extract release-ec2.zip
+        run: unzip -o release-ec2.zip -d terraform-ec2
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
