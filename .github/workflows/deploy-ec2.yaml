@@ -19,12 +19,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Get latest -ec2 tag
+      - name: Get latest -ec2 release tag
         id: get_tag
         run: |
           tag=$(curl -s -H "Authorization: token ${{ secrets.SECRET_KEY }}" \
-            https://api.github.com/repos/${{ github.repository }}/tags \
-            | jq -r '.[].name' | grep '\-ec2$' | head -n 1)
+            https://api.github.com/repos/${{ github.repository }}/releases \
+            | jq -r '.[] | select(.tag_name | test("-ec2$")) | .tag_name' | head -n 1)
           echo "Resolved EC2 Tag: $tag"
           echo "latest_tag=$tag" >> $GITHUB_OUTPUT
 
