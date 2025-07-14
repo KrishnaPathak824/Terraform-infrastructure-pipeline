@@ -36,7 +36,6 @@ jobs:
           file: release-ec2.zip
           target: release-ec2.zip
           token: ${{ secrets.SECRET_KEY }}
-          version: ${{ steps.get_tag.outputs.latest_tag }}
 
       - name: Extract release-ec2.zip
         run: unzip -o release-ec2.zip -d terraform-ec2
