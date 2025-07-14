@@ -83,8 +83,6 @@ jobs:
           terraform fmt -check | tee fmt_output.txt
           echo "exitcode=$?" >> "$GITHUB_OUTPUT"
 
-
-
       - name: Post Format Comment
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
