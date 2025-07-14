@@ -1,4 +1,5 @@
 name: deploy-ec2-infrastructure
+
 on:
   push:
     branches:
