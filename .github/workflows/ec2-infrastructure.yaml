@@ -1,4 +1,4 @@
-name: Infrastructure CI/CD
+name: Infrastructure CI/CD EC2
 on:
   pull_request:
     types: [opened, synchronize, closed]
@@ -8,7 +8,6 @@ on:
 permissions:              
   contents: read
   pull-requests: write
-
 
 jobs:
   lint:
@@ -44,16 +43,20 @@ jobs:
       - name: Debug - Show init output
         run: cat terraform-ec2/init_output.txt || echo "init_output.txt not found"
 
-      - name: Post Init Comment
-        uses: GetTerminus/terraform-pr-commenter@v3
-        if: ${{ always() }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY}}
+      - name: Comment Terraform Plan on PR
+        uses: actions/github-script@v7
         with:
-          commenter_type: init
-          commenter_input: terraform-ec2/init_output.txt
-          commenter_exitcode: ${{ steps.init.outputs.exitcode }}
-          commenter_debug: true
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('terraform-ec2/init_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform Init Output for \`ec2-project\`
+              \n\n\`\`\`hcl\n${plan}\n\`\`\``
+              });
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
@@ -72,7 +75,6 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Post TFLint Comment
-        if: ${{ always()}}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
@@ -89,7 +91,6 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Post Format Comment
-        if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
@@ -107,7 +108,6 @@ jobs:
         continue-on-error: true
 
       - name: Post TF Validate Comment
-        if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
@@ -144,8 +144,6 @@ jobs:
       - name: tfsec
         uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
         with:
-          working-directory: terraform-ec2
-          minimum_severity: HIGH 
           github_token: ${{ github.token }}
 
           
@@ -177,8 +175,16 @@ jobs:
         working-directory: terraform-ec2
         id: plan
         run: |
-          terraform plan -out=tfplan | tee plan_output.txt
+          terraform plan  | tee tfplan.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
+
+      - name: Debug - Show plan output
+        run: cat terraform-ec2/tfplan.txt || echo "tfplan.txt not found"
+
+      - name: Copy file for commenter
+        run: |
+          cp terraform-ec2/tfplan.txt ./tfplan.txt
+          echo "File copied successfully"
 
       - name: Post Plan Comment
         if: ${{ always() }}
@@ -187,7 +193,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
         with:
           commenter_type: plan
-          commenter_input: terraform-ec2/plan_output.txt
+          commenter_input: tfplan.txt
           commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
           commenter_debug: true
 
