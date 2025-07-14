@@ -43,21 +43,21 @@ jobs:
       - name: Debug - Show init output
         run: cat terraform-ec2/init_output.txt || echo "init_output.txt not found"
 
-      - name: Copy file for commenter
-        run: |
-          cp terraform-ec2/init_output.txt ./init_output.txt
-          echo "File copied successfully"
-          ls -la init_output.txt
-
-      - name: Post Init Comment
-        uses: GetTerminus/terraform-pr-commenter@v3
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Comment Terraform Plan on PR
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        uses: actions/github-script@v7
         with:
-          commenter_type: init
-          commenter_input: init_output.txt
-          commenter_exitcode: ${{ steps.init.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('ec2-project/init_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform Init Output for \`ec2-project\`
+              \n\n\`\`\`hcl\n${plan}\n\`\`\``
+              });
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
