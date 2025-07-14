@@ -51,7 +51,7 @@ jobs:
           commenter_type: init
           commenter_input: terraform-ec2/init_output.txt
           commenter_exitcode: ${{ steps.init.outputs.exitcode }}
-          commenter_debug: true
+          commenter_behavior: always
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
