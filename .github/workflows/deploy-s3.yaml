@@ -26,7 +26,8 @@ jobs:
           file: release-s3.zip
           target: release-s3.zip
           token: ${{ secrets.SECRET_KEY }}
-          version: latest
+          version: "*-s3"
+          regex: true
 
       - name: Extract release-s3.zip
         run: unzip -o release-s3.zip -d terraform-s3bucket

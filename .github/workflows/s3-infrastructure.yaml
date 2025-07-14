@@ -217,7 +217,7 @@ jobs:
         id: get_tag
         run: |
           git fetch --tags
-          latest_tag=$(git tag --sort=-v:refname | head -n 1)
+          latest_tag=$(git tag --sort=-v:refname | grep '\-s3$' | head -n 1)
           echo "Latest tag: $latest_tag"
           echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
 
@@ -245,17 +245,17 @@ jobs:
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.SECRET_KEY }}
-          automatic_release_tag: ${{ steps.calc_tag.outputs.new_tag }}-ec2
+          automatic_release_tag: ${{ steps.calc_tag.outputs.new_tag }}-s3
           prerelease: false
-          title: Release ${{ steps.calc_tag.outputs.new_tag }}-ec2
+          title: Release ${{ steps.calc_tag.outputs.new_tag }}-s3
           files: terraform-s3bucket/release-artifacts/release-s3.zip
 
       - name: Add PR Comment
         uses: mshick/add-pr-comment@v2
         with:
           message: |
-            A new release **${{ steps.calc_tag.outputs.new_tag }}** was created.
-            See the release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.calc_tag.outputs.new_tag }}
+            A new release **${{ steps.calc_tag.outputs.new_tag }}-s3** was created.
+            See the release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.calc_tag.outputs.new_tag }}-s3
           repo-token: ${{ secrets.SECRET_KEY }}
           allow-repeats: false
 
