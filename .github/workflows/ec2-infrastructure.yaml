@@ -47,13 +47,15 @@ jobs:
 
       - name: Init TFLint
         working-directory: terraform-ec2
-        run: tflint --init
+        run: |
+          tflint --init
+          tflint --version
 
       - name: Run TFLint
         working-directory: terraform-ec2
         id: tflint
         run: |
-          tflint -f compact | tee tflint_output.txt
+          tflint -f compact -no-color | tee tflint_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Cat TFLint
@@ -79,7 +81,7 @@ jobs:
         working-directory: terraform-ec2
         id: fmt
         run: |
-          terraform fmt -check | tee fmt_output.txt
+          terraform fmt -no-color -check | tee fmt_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Comment Terraform TF Format
@@ -101,7 +103,7 @@ jobs:
         id: validate
         working-directory: terraform-ec2
         run: |
-          terraform validate | tee validate_output.txt
+          terraform validate -no-color | tee validate_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
@@ -179,11 +181,8 @@ jobs:
         working-directory: terraform-ec2
         id: plan
         run: |
-          terraform plan  | tee tfplan.txt
+          terraform plan -no-color  | tee tfplan.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
-
-      - name: Debug - Show plan output
-        run: cat terraform-ec2/tfplan.txt || echo "tfplan.txt not found"
 
       - name: Comment Terraform TFPlan
         uses: actions/github-script@v7
