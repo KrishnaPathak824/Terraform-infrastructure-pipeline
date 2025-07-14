@@ -179,6 +179,14 @@ jobs:
           terraform plan -out=tfplan | tee plan_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
+      - name: Debug - Show plan output
+        run: cat terraform-ec2/plan_output.txt || echo "plan_output.txt not found"
+
+      - name: Copy file for commenter
+        run: |
+          cp terraform-ec2/plan_output.txt ./plan_output.txt
+          echo "File copied successfully"
+
       - name: Post Plan Comment
         if: ${{ always() }}
         uses: GetTerminus/terraform-pr-commenter@v3
@@ -186,7 +194,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
         with:
           commenter_type: plan
-          commenter_input: terraform-ec2/plan_output.txt
+          commenter_input: plan_output.txt
           commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
           commenter_debug: true
 
