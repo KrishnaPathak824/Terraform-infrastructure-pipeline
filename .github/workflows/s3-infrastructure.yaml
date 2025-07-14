@@ -1,21 +1,21 @@
-name: Infrastructure CI/CD
+name: Infrastructure CI/CD S3
 on:
   pull_request:
     types: [opened, synchronize, closed]
-    paths:
-      - 'terraform-s3bucket/**'
     branches:
       - main
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+permissions:              
+  contents: read
+  pull-requests: write
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -35,23 +35,10 @@ jobs:
 
       - name: Init Terraform
         id: init
+        working-directory: terraform-s3bucket
         run: |
-          terraform init | tee init_output.txt
-          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
-
-      - name: Show init_output.txt content
-        if: always()
-        run: cat init_output.txt || echo "init_output.txt not found"
-
-      - name: Post Init Comment
-        if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          commenter_type: init
-          commenter_input: init_output.txt
-          commenter_exitcode: ${{ steps.init.outputs.exitcode }}
+          terraform init  | tee init_output.txt
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
@@ -59,63 +46,88 @@ jobs:
           tflint_version: v0.52.0
 
       - name: Init TFLint
-        run: tflint --init
+        working-directory: terraform-s3bucket
+        run: |
+          tflint --init
+          tflint --version
 
       - name: Run TFLint
+        working-directory: terraform-s3bucket
         id: tflint
         run: |
           tflint -f compact | tee tflint_output.txt
-          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
-      
-      - name: Post TFLint Comment
-        if: ${{ always()}}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
+
+      - name: Cat TFLint
+        run: |
+          cat terraform-s3bucket/tflint_output.txt || echo "tflint_output.txt not found"
+
+      - name: Comment Terraform TFLint
+        uses: actions/github-script@v7
         with:
-          commenter_type: tflint
-          commenter_input: tflint_output.txt
-          commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const lint = fs.readFileSync('terraform-s3bucket/tflint_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TFLint Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${lint}\n\`\`\``
+              });
 
       - name: Run Terraform format
+        working-directory: terraform-s3bucket
         id: fmt
         run: |
-          terraform fmt -check | tee fmt_output.txt
-          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+          terraform fmt -no-color -check | tee fmt_output.txt
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Post Format Comment
-        if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Comment Terraform TF Format
+        uses: actions/github-script@v7
         with:
-          commenter_type: fmt
-          commenter_input: fmt_output.txt
-          commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const fmt = fs.readFileSync('terraform-s3bucket/fmt_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TF Format Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${fmt}\n\`\`\``
+              });
 
       - name: Terraform Validate
         id: validate
+        working-directory: terraform-s3bucket
         run: |
-          terraform validate | tee validate_output.txt
-          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+          terraform validate -no-color | tee validate_output.txt
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
-      - name: Post TF Validate Comment
-        if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Comment Terraform TF Validate
+        uses: actions/github-script@v7
         with:
-          commenter_type: validate
-          commenter_input: validate_output.txt
-          commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const validate = fs.readFileSync('terraform-s3bucket/validate_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TF Validate Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${validate}\n\`\`\``
+              });
 
-  Security-check:
+  security-check:
     runs-on: ubuntu-latest
     needs: lint
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -130,7 +142,121 @@ jobs:
           terraform_version: 1.12.0
 
       - name: Init Terraform
+        working-directory: terraform-s3bucket
         id: init
         run: | 
           terraform init 
+
+      - name: tfsec
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
+        with:
+          github_token: ${{ github.token }}
+
           
+  terraform-plan:
+    runs-on: ubuntu-latest
+    needs: security-check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.12.0
+
+      - name: Init Terraform
+        working-directory: terraform-s3bucket
+        id: init
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: terraform-s3bucket
+        id: plan
+        run: |
+          terraform plan -no-color  | tee tfplan.txt
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
+
+      - name: Comment Terraform TFPlan
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const tfplan = fs.readFileSync('terraform-s3bucket/tfplan.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TFPlan Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${tfplan}\n\`\`\``
+              });
+
+  build-artifact:
+    runs-on: ubuntu-latest  
+    needs: terraform-plan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4      
+
+      - name: Create release artifact
+        working-directory: terraform-s3bucket
+        run: |
+          zip -r release-s3.zip . -x '*.git*' 
+          mkdir -p release-artifacts
+          mv release-s3.zip release-artifacts/
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          git fetch --tags
+          latest_tag=$(git tag --sort=-v:refname | head -n 1)
+          echo "Latest tag: $latest_tag"
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+
+      - name: Calculate next tag
+        id: calc_tag
+        run: |
+          old=${{ steps.get_tag.outputs.latest_tag }}
+          if [ -z "$old" ]; then
+            echo "No previous tag, starting at v0.1.0"
+            echo "new_tag=v0.1.0" >> $GITHUB_OUTPUT
+          else
+            IFS='.' read -r major minor patch <<<"${old#v}"
+            patch=$((patch + 1))
+            echo "new_tag=v${major}.${minor}.${patch}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Tag
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.SECRET_KEY }}
+          custom_tag: ${{ steps.calc_tag.outputs.new_tag }}
+          tag_prefix: ""
+
+      - name: Create GitHub Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.SECRET_KEY }}
+          automatic_release_tag: ${{ steps.calc_tag.outputs.new_tag }}
+          prerelease: false
+          title: Release ${{ steps.calc_tag.outputs.new_tag }}
+          files: terraform-s3bucket/release-artifacts/release-s3.zip
+
+      - name: Add PR Comment
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            A new release **${{ steps.calc_tag.outputs.new_tag }}** was created.
+            See the release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.calc_tag.outputs.new_tag }}
+          repo-token: ${{ secrets.SECRET_KEY }}
+          allow-repeats: false
+
+    

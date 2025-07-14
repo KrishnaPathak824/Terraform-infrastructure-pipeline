@@ -1,0 +1,49 @@
+name: deploy-S3-infrastructure
+on:
+  push:
+    workflow_run:
+      workflows: ["deploy-ec2-infrastructure"]
+      types:
+        - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download latest release zip
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          repo: ${{ github.repository }}
+          file: release-s3.zip
+          target: release-s3.zip
+          token: ${{ secrets.SECRET_KEY }}
+
+      - name: Extract release-s3.zip
+        run: unzip -o release-s3.zip -d terraform-s3bucket
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.12.0 
+
+      - name: Terraform Init
+        working-directory: terraform-s3bucket
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: terraform-s3bucket
+        run: terraform plan
+
+      - name: Terraform Apply
+        working-directory: terraform-s3bucket
+        run: terraform apply -auto-approve
