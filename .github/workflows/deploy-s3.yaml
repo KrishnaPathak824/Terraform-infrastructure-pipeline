@@ -42,7 +42,7 @@ jobs:
                -H "Accept: application/octet-stream" \
                 "$asset_url" -o release-s3.zip
 
-          echo "✅ Downloaded release-s3.zip"
+          echo " Downloaded release-s3.zip"
 
       - name: Extract release-s3.zip
         run: unzip -o release-s3.zip -d terraform-s3bucket
