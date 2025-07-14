@@ -19,15 +19,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Download latest release zip
+      - name: Get latest -ec2 tag
+        id: get_tag
+        run: |
+          tag=$(curl -s -H "Authorization: token ${{ secrets.SECRET_KEY }}" \
+            https://api.github.com/repos/${{ github.repository }}/tags \
+            | jq -r '.[].name' | grep '\-ec2$' | head -n 1)
+          echo "latest_tag=$tag" >> $GITHUB_OUTPUT
+
+      - name: Download release-ec2.zip
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: ${{ github.repository }}
           file: release-ec2.zip
           target: release-ec2.zip
           token: ${{ secrets.SECRET_KEY }}
-          version: "*-ec2"
-          regex: true
+          version: ${{ steps.get_tag.outputs.latest_tag }}
 
       - name: Extract release-ec2.zip
         run: unzip -o release-ec2.zip -d terraform-ec2
