@@ -6,14 +6,13 @@ on:
       - main
 
 permissions:              
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -73,7 +72,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Terraform TFLint Output for \`ec2-instance\`
+              body: `## Terraform TFLint Output for \`s3-bucket\`
               \n\n\`\`\`hcl\n${lint}\n\`\`\``
               });
 
@@ -95,7 +94,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Terraform TF Format Output for \`ec2-instance\`
+              body: `## Terraform TF Format Output for \`s3-bucket\`
               \n\n\`\`\`hcl\n${fmt}\n\`\`\``
               });
 
@@ -118,7 +117,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Terraform TF Validate Output for \`ec2-instance\`
+              body: `## Terraform TF Validate Output for \`s3-bucket\`
               \n\n\`\`\`hcl\n${validate}\n\`\`\``
               });
 
@@ -195,7 +194,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Terraform TFPlan Output for \`ec2-instance\`
+              body: `## Terraform TFPlan Output for \`s3-bucket\`
               \n\n\`\`\`hcl\n${tfplan}\n\`\`\``
               });
 
@@ -246,7 +245,7 @@ jobs:
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git tag ${{ steps.semver.outputs.new_tag }}
-        git remote set-url origin https://x-access-token:${{ secrets.SECRET_KEY }}@github.com/${{ github.repository }}.git
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         git push origin ${{ steps.semver.outputs.new_tag }}
 
     - name: Create GitHub Release
