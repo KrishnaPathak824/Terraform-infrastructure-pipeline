@@ -37,26 +37,11 @@ jobs:
         id: init
         working-directory: terraform-ec2
         run: |
-          terraform init | tee init_output.txt
+          terraform init  | tee init_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Debug - Show init output
         run: cat terraform-ec2/init_output.txt || echo "init_output.txt not found"
-
-      - name: Comment Terraform Plan on PR
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.SECRET_KEY }}
-          script: |
-            const fs = require('fs');
-            const plan = fs.readFileSync('terraform-ec2/init_output.txt', 'utf8');
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Terraform Init Output for \`ec2-project\`
-              \n\n\`\`\`hcl\n${plan}\n\`\`\``
-              });
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
@@ -74,14 +59,20 @@ jobs:
           tflint -f compact | tee tflint_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Post TFLint Comment
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
+      - name: Comment Terraform TFLint
+        uses: actions/github-script@v7
         with:
-          commenter_type: tflint
-          commenter_input: terraform-ec2/tflint_output.txt
-          commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const lint = fs.readFileSync('terraform-ec2/tflint.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TFLint Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${lint}\n\`\`\``
+              });
 
       - name: Run Terraform format
         working-directory: terraform-ec2
@@ -90,14 +81,20 @@ jobs:
           terraform fmt -check | tee fmt_output.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
-      - name: Post Format Comment
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
+      - name: Comment Terraform TF Format
+        uses: actions/github-script@v7
         with:
-          commenter_type: fmt
-          commenter_input: terraform-ec2/fmt_output.txt
-          commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const fmt = fs.readFileSync('terraform-ec2/fmt_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TF Format Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${fmt}\n\`\`\``
+              });
 
       - name: Terraform Validate
         id: validate
@@ -107,14 +104,20 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
 
-      - name: Post TF Validate Comment
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
+      - name: Comment Terraform TF Format
+        uses: actions/github-script@v7
         with:
-          commenter_type: validate
-          commenter_input: terraform-ec2/validate_output.txt
-          commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const fmt = fs.readFileSync('terraform-ec2/fmt_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TF Format Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${fmt}\n\`\`\``
+              });
 
   security-check:
     runs-on: ubuntu-latest
@@ -181,21 +184,21 @@ jobs:
       - name: Debug - Show plan output
         run: cat terraform-ec2/tfplan.txt || echo "tfplan.txt not found"
 
-      - name: Copy file for commenter
-        run: |
-          cp terraform-ec2/tfplan.txt ./tfplan.txt
-          echo "File copied successfully"
-
-      - name: Post Plan Comment
-        if: ${{ always() }}
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_KEY }}
+      - name: Comment Terraform TFPlan
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        uses: actions/github-script@v7
         with:
-          commenter_type: plan
-          commenter_input: tfplan.txt
-          commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
-          commenter_debug: true
+          github-token: ${{ secrets.SECRET_KEY }}
+          script: |
+            const fs = require('fs');
+            const tfplan = fs.readFileSync('terraform-ec2/tfplan.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform TFPlan Output for \`ec2-instance\`
+              \n\n\`\`\`hcl\n${tfplan}\n\`\`\``
+              });
 
   build-artifact:
     runs-on: ubuntu-latest  
