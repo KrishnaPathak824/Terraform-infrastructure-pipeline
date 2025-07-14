@@ -1,10 +1,9 @@
 name: deploy-S3-infrastructure
 on:
-  push:
-    workflow_run:
-      workflows: ["deploy-ec2-infrastructure"]
-      types:
-        - completed
+  workflow_run:
+    workflows: ["deploy-ec2-infrastructure"]
+    types:
+      - completed
 
 jobs:
   deploy:
