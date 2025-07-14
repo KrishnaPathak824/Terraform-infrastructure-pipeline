@@ -1,4 +1,5 @@
 name: deploy-S3-infrastructure
+
 on:
   workflow_run:
     workflows: ["deploy-ec2-infrastructure"]
@@ -8,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -24,11 +26,11 @@ jobs:
         run: |
           tag=$(curl -s -H "Authorization: token ${{ secrets.SECRET_KEY }}" \
             https://api.github.com/repos/${{ github.repository }}/releases \
-            | jq -r '.[] | select(.tag_name | test("-s3$")) | .tag_name' | head -n 1)
+            | jq -r '.[] | select(.tag_name | endswith("-s3")) | .tag_name' | head -n 1)
           echo "Resolved S3 Tag: $tag"
           echo "latest_tag=$tag" >> $GITHUB_OUTPUT
 
-      - name: Download latest release zip
+      - name: Download latest release-s3.zip
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: ${{ github.repository }}
